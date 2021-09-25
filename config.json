@@ -1,0 +1,14 @@
+{
+  "imageSourceUrl": "https://webcam.rybnik.eu/plac.jpg",
+  "debug": true,
+  "saveOutput": false,
+  "diffMultiplier": 100,
+  "iterationTime": 2000,
+  "timeoutTime": 5000,
+  "indexName": "pbeye",
+  "elasticSearch": {
+    "host": "127.0.0.1:9200",
+    "log": "error",
+    "apiVersion": "7.1"
+  }
+}

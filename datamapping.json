@@ -1,0 +1,11 @@
+{
+    "properties": {
+        "activity": {
+            "type": "double"
+        },
+        "timestamp": {
+            "type": "date",
+            "format": "epoch_millis"
+        }
+    }
+}

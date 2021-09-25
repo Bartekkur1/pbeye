@@ -1,0 +1,26 @@
+{
+  "name": "pbeye",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "elasticsearch": "^16.7.2",
+    "jimp": "^0.16.1",
+    "log4js": "^6.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bartekkur1/pbeye.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bartekkur1/pbeye/issues"
+  },
+  "homepage": "https://github.com/Bartekkur1/pbeye#readme"
+}
