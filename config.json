@@ -6,6 +6,8 @@
   "iterationTime": 2000,
   "timeoutTime": 5000,
   "indexName": "pbeye",
+  "baseImagePath": "./images/base.jpg",
+  "outputImagePath": "./images/output.jpg",
   "elasticSearch": {
     "host": "127.0.0.1:9200",
     "log": "error",
