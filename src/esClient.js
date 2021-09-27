@@ -18,6 +18,7 @@ module.exports = {
         } catch (err) {
             logger.fatal("Failed to establish ES connection!");
             logger.fatal(err);
+            process.exit(0);
         }
     },
     async validateEsStructure() {

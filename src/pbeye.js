@@ -12,18 +12,9 @@ module.exports = {
         logger.debug('pbEye initializing...')
         await esClient.init(config);
         if (!this.baseImage) {
-            this.baseImage = await jimp.read('./base.jpg');
+            const rawBaseImage = await jimp.read(config.baseImagePath);
+            this.baseImage = rawBaseImage.grayscale();
         }
-    },
-    async getMotionDifference() {
-        nextImage = await readWebcameImage();
-        const diff = jimp.diff(this.baseImage, nextImage);
-
-        if (config.saveOutput && config.debug) {
-            await diff.image.writeAsync('./output.png');
-        }
-
-        return diff.percent;
     },
     async checkTimeout() {
         if (this.timeout) {
@@ -38,15 +29,18 @@ module.exports = {
             await this.checkTimeout();
             try {
                 await sleep(config.iterationTime);
-                const diffRaw = await this.getMotionDifference();
-                const diff = diffRaw * config.diffMultiplier;
+                const nextImage = await readWebcameImage();
+                const diffRaw = jimp.diff(this.baseImage, nextImage);
+                const diff = diffRaw.percent * config.diffMultiplier;
+
+                if (config.saveOutput && config.debug) {
+                    await diff.image.writeAsync(config.outputImagePath);
+                }
 
                 await motionDao.save({
                     activity: diff,
                     timestamp: getDateTime()
                 }, config.indexName);
-
-                logger.debug(`diff: ${diff}`);
             } catch (err) {
                 this.timeout = true;
                 logger.error(err);
