@@ -6,24 +6,23 @@ const { readWebcameImage, sleep, getDateTime } = require('./util');
 const motionDao = require('./motion.dao');
 
 module.exports = {
-    prevImage: null,
+    baseImage: null,
     timeout: false,
     async init() {
         logger.debug('pbEye initializing...')
         await esClient.init(config);
-        if (!this.prevImage) {
-            this.prevImage = await readWebcameImage();
+        if (!this.baseImage) {
+            this.baseImage = await jimp.read('./base.jpg');
         }
     },
     async getMotionDifference() {
         nextImage = await readWebcameImage();
-        const diff = jimp.diff(this.prevImage, nextImage);
+        const diff = jimp.diff(this.baseImage, nextImage);
 
         if (config.saveOutput && config.debug) {
             await diff.image.writeAsync('./output.png');
         }
 
-        this.prevImage = nextImage
         return diff.percent;
     },
     async checkTimeout() {

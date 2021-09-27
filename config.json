@@ -1,5 +1,5 @@
 {
-  "imageSourceUrl": "https://webcam.rybnik.eu/plac.jpg",
+  "imageSourceUrl": "http://pbqueue.fp.lan/test.jpg",
   "debug": true,
   "saveOutput": false,
   "diffMultiplier": 100,
