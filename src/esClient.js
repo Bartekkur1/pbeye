@@ -1,6 +1,7 @@
-const pbDataMapping = require('../datamapping.json');
+const pbDataMapping = require('../config/datamapping.json');
 const elasticsearch = require('elasticsearch');
 const logger = require('./logger');
+const util = require('./util');
 
 module.exports = {
     /**
@@ -8,12 +9,11 @@ module.exports = {
      */
     client: null,
     indexName: null,
+    config: null,
     async init(config) {
-        this.indexName = config.indexName;
+        this.config = config;
         try {
-            this.client = this.createEsClient();
-            await this.client.ping();
-            logger.info('Connected to ES!');
+            await this.establishConnection();
             await this.validateEsStructure();
         } catch (err) {
             logger.fatal("Failed to establish ES connection!");
@@ -21,8 +21,27 @@ module.exports = {
             process.exit(0);
         }
     },
+    async establishConnection() {
+        this.client = this.createEsClient();
+        while (this.config.esConnectionRetries > 0) {
+            logger.info("Establishing connection to ES...");
+            try {
+                await this.client.ping();
+                logger.info('Connected to ES!');
+                break;
+            } catch (error) {
+                logger.warn('Failed connecting to ES!');
+                logger.warn(`Tries left: ${this.config.esConnectionRetries}`);
+                this.config.esConnectionRetries--;
+            }
+            await util.sleep(this.config.esConnectionTimeout);
+        }
+        if (this.config.esConnectionRetries == 0) {
+            throw Error('Failed establishing connection to ES!');
+        }
+    },
     createEsClient() {
-        return new elasticsearch.Client(config.elasticSearch);
+        return new elasticsearch.Client(this.config.elasticSearch);
     },
     async validateEsStructure() {
         logger.debug("Validating ES structure...");
@@ -33,7 +52,7 @@ module.exports = {
     async assertIndexExists() {
         logger.debug("Validating indices");
         const indexExists = await this.client.indices.exists({
-            index: this.indexName
+            index: this.config.indexName
         });
         if (indexExists) {
             logger.debug('pbEye index exists');
@@ -41,7 +60,7 @@ module.exports = {
             logger.debug("pbEye Index not found!");
             logger.debug("Creating pbEye index...");
             await this.client.indices.create({
-                index: this.indexName,
+                index: this.config.indexName,
 
             });
             logger.debug("pbEye index created!");
@@ -50,7 +69,7 @@ module.exports = {
     async assertMappingExists() {
         logger.debug("Validating mapping");
         const esMapping = await this.client.indices.getMapping({
-            index: this.indexName
+            index: this.config.indexName
         });
         if (esMapping &&
             JSON.stringify(esMapping.pbeye.mappings) == JSON.stringify(pbDataMapping)) {
@@ -59,7 +78,7 @@ module.exports = {
             logger.debug("invalid pbEye mapping found");
             logger.debug("uploading pbEye mapping...");
             await this.client.indices.putMapping({
-                index: this.indexName,
+                index: this.config.indexName,
                 body: pbDataMapping
             });
             logger.debug("pbEye mapping uploaded!");

@@ -8,8 +8,10 @@
   "indexName": "pbeye",
   "baseImagePath": "./images/base.jpg",
   "outputImagePath": "./images/output.jpg",
+  "esConnectionRetries": 10,
+  "esConnectionTimeout": 2500,
   "elasticSearch": {
-    "host": "127.0.0.1:9200",
+    "host": "elasticsearch:9200",
     "log": "error",
     "apiVersion": "7.1"
   }

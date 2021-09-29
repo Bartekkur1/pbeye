@@ -1,4 +1,4 @@
-const config = require("../config.json");
+const config = require("../config/config.json");
 const jimp = require("jimp");
 const esClient = require('./esClient');
 const logger = require('./logger');

@@ -4,7 +4,8 @@ const sinon = require('sinon');
 const logger = require('../src/logger');
 const { expect } = require('chai');
 const { createSandbox } = require('sinon');
-const pbDataMapping = require('../datamapping.json');
+const pbDataMapping = require('../config/datamapping.json');
+const util = require('../src/util');
 
 describe('EsClient tests', () => {
     const sandbox = createSandbox();
@@ -23,37 +24,62 @@ describe('EsClient tests', () => {
 
     describe("Initialization", () => {
         it('Should initialize esClient', async () => {
-            pingStub = sandbox.stub().resolves();
-            esClientStub = sandbox.stub(esClient, 'createEsClient').returns({
-                ping: pingStub
-            });
-            validateStructureStub = sandbox.stub(esClient, 'validateEsStructure').resolves();
+            const validateStructureStub = sandbox.stub(esClient, 'validateEsStructure').resolves();
+            const establishConnectionStub = sandbox.stub(esClient, 'establishConnection').resolves();
 
             await esClient.init(testConfig);
 
-            sinon.assert.calledOnce(pingStub);
-            sinon.assert.calledOnce(esClientStub);
+            sinon.assert.calledOnce(establishConnectionStub);
             sinon.assert.calledOnce(validateStructureStub);
         });
 
         it('Should exit on connection fail', async () => {
             const loggerStub = sandbox.stub(logger, 'fatal');
             const processExitStub = sandbox.stub(process, 'exit');
-            const pingStub = sandbox.stub().rejects();
-            const esClientStub = sandbox.stub(esClient, 'createEsClient').returns({
-                ping: pingStub
-            });
+            const establishConnectionStub = sandbox.stub(esClient, 'establishConnection').rejects();
+
 
             await esClient.init(testConfig);
 
-            sinon.assert.calledOnce(esClientStub)
-            sinon.assert.calledOnce(pingStub)
+            sinon.assert.calledOnce(establishConnectionStub)
             sinon.assert.calledOnceWithExactly(processExitStub, 0);
             sinon.assert.calledTwice(loggerStub);
             const [loggerFatals] = loggerStub.args;
             const [errorMessage] = loggerFatals;
             expect(errorMessage).to.be.equal('Failed to establish ES connection!');
         });
+
+        it('Should establish connection', async () => {
+            const pingStub = sandbox.stub().resolves();
+            const esClientStub = sandbox.stub(esClient, 'createEsClient').returns({
+                ping: pingStub
+            });
+
+            esClient.config.esConnectionRetries = 1;
+            await esClient.establishConnection();
+
+            sinon.assert.calledOnce(pingStub);
+            sinon.assert.calledOnce(esClientStub);
+        });
+
+        it('Should wait before trying to connect again', async () => {
+            const pingStub = sandbox.stub();
+            pingStub.onFirstCall().rejects();
+            pingStub.onSecondCall().resolves();
+            sandbox.stub(util, 'sleep').resolves();
+            const esClientStub = sandbox.stub(esClient, 'createEsClient').returns({
+                ping: pingStub
+            });
+
+            esClient.config.esConnectionRetries = 3;
+            esClient.config.esConnectionTimeout = 0;
+            await esClient.establishConnection();
+
+            sinon.assert.calledTwice(pingStub);
+            sinon.assert.calledOnce(esClientStub);
+            expect(esClient.config.esConnectionRetries).to.be.equal(2);
+        });
+
     });
 
     describe('Structure check', () => {

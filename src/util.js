@@ -1,5 +1,5 @@
 const jimp = require("jimp");
-const config = require('../config.json');
+const config = require('../config/config.json');
 
 /**
  * @param {number} ms time to wait
