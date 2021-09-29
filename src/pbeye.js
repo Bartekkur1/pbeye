@@ -2,7 +2,7 @@ const config = require("../config.json");
 const jimp = require("jimp");
 const esClient = require('./esClient');
 const logger = require('./logger');
-const { readWebcameImage, sleep, getDateTime } = require('./util');
+const { readWebcamImage, sleep, getDateTime } = require('./util');
 const motionDao = require('./motion.dao');
 
 module.exports = {
@@ -29,7 +29,7 @@ module.exports = {
             await this.checkTimeout();
             try {
                 await sleep(config.iterationTime);
-                const nextImage = await readWebcameImage();
+                const nextImage = await readWebcamImage();
                 const diffRaw = jimp.diff(this.baseImage, nextImage);
                 const diff = diffRaw.percent * config.diffMultiplier;
 

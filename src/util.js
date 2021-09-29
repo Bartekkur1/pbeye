@@ -8,16 +8,15 @@ const config = require('../config.json');
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 /**
- * @returns {string} datetime time zone formatted
+ * @returns {string} time in ms
  */
 const getDateTime = () => new Date().getTime();
-// const getDateTime = () => new Date().toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' });
 
 /**
  * @param {string} url
  * @returns {Jimp} WebcamImage
  */
-const readWebcameImage = async () => {
+const readWebcamImage = async () => {
     const image = await jimp.read(config.imageSourceUrl);
     return image.grayscale();
 }
@@ -25,5 +24,5 @@ const readWebcameImage = async () => {
 module.exports = {
     sleep,
     getDateTime,
-    readWebcameImage
+    readWebcamImage
 }
