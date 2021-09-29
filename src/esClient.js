@@ -11,7 +11,7 @@ module.exports = {
     async init(config) {
         this.indexName = config.indexName;
         try {
-            this.client = new elasticsearch.Client(config.elasticSearch);
+            this.client = this.createEsClient();
             await this.client.ping();
             logger.info('Connected to ES!');
             await this.validateEsStructure();
@@ -20,6 +20,9 @@ module.exports = {
             logger.fatal(err);
             process.exit(0);
         }
+    },
+    createEsClient() {
+        return new elasticsearch.Client(config.elasticSearch);
     },
     async validateEsStructure() {
         logger.debug("Validating ES structure...");
